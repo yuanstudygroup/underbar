@@ -77,16 +77,35 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
+    var result=[];
+    _.each(collection, function(item){
+      if(test(item)){
+        result.push(item)
+      }
+    })
+    return result;
   };
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
+    return _.filter(collection, function(item){
+      return !test(item)
+    })
   };
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
+    var obj={};
+    var result = [];
+    _.each(array,function(item){
+      if(!obj[item]){
+        obj[item]=item;
+        result.push(item)
+      }
+    })
+    return result
   };
 
 
@@ -95,6 +114,11 @@
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
+    var result = [];
+    _.each(collection, function(item){
+      result.push(iterator(item))
+    })
+    return result;
   };
 
   /*
@@ -136,30 +160,59 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+    _.each(collection, function(item,i){
+      if(accumulator===undefined && i === 0){
+        accumulator = item;
+      }else{
+        accumulator = iterator(accumulator,item);
+      }
+    })
+    return accumulator
   };
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
-    return _.reduce(collection, function(wasFound, item) {
-      if (wasFound) {
-        return true;
+    // return _.reduce(collection, function(wasFound, item) {
+    //   if (wasFound) {
+    //     return true;
+    //   }
+    //   return item === target;
+    // }, false);
+    var flag = false;
+    return _.reduce(collection, function(memo, item){
+      if(item === target){
+        flag = true;
       }
-      return item === target;
-    }, false);
+      return flag
+    },false)
   };
 
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    return _.reduce(collection, function(memo, item){
+      if(iterator !== undefined){
+        return memo && Boolean(iterator(item))
+      }else{
+        return memo && Boolean(item)
+      }
+    },true)
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    return _.reduce(collection, function(memo, item){
+      if(iterator === undefined){
+        return memo || Boolean(item)
+      }else{
+        return memo || Boolean(iterator(item))
+      }
+    },false)
   };
 
 
@@ -182,11 +235,25 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    for(var i=0; i< arguments.length; i++){
+      obj = Object.assign(obj, arguments[i]);
+    }
+    return obj
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    for(var i=0; i<arguments.length; i++){
+      for(var key in arguments[i]){
+        if(key in obj){
+          continue;
+        }else{
+          obj[key] = arguments[i][key];
+        }
+      }
+    }
+    return obj
   };
 
 
@@ -230,6 +297,18 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var storage = {};
+    var result;
+    return function(){
+      var args = Array.prototype.slice.call(arguments);
+      args = JSON.stringify(args);
+      if(storage[args]){
+        return storage[args];
+      }else{
+        storage[args] = func.apply(this, arguments);
+        return storage[args];
+      }
+    }
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -239,6 +318,7 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+
   };
 
 
